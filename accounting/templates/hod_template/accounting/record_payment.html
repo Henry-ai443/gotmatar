@@ -1,0 +1,16 @@
+{% extends 'main_app/base.html' %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card card-success">
+                    <div class="card-header"><h3 class="card-title">Record Payment for {{ invoice.student.admin.first_name }} (Total: ${{ invoice.total_amount }})</h3></div>
+                    {% include "main_app/form_template.html" with form=form button_text="Save Payment" %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

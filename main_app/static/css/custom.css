@@ -1,0 +1,83 @@
+/* Login page background animation */
+.login-bg {
+    background: linear-gradient(135deg, #ffffff, #f0f0f0, #cfe2ff);
+    background-size: 400% 400%;
+    animation: bgGradientShift 15s ease infinite;
+}
+@keyframes bgGradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 1. Rounded Corners */
+.card, .info-box, .small-box, .alert {
+    border-radius: 8px !important;
+}
+
+.btn {
+    border-radius: 6px !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.badge {
+    border-radius: 4px !important;
+    padding: 0.4em 0.6em;
+}
+
+/* 2. Softer Box Shadows for Cards */
+.card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    border: none;
+}
+
+/* 3. Increased Whitespace / Padding */
+.card-body {
+    padding: 1.5rem !important;
+}
+
+.card-header {
+    padding: 1rem 1.5rem !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* 4. Improved Badge Contrast */
+.badge-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important; /* Dark text for contrast */
+}
+.badge-success {
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+}
+.badge-info {
+    background-color: #17a2b8 !important;
+    color: #ffffff !important;
+}
+
+/* 5. Subtle Hover States */
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02) !important;
+    transition: background-color 0.2s ease;
+}
+
+/* 6. Empty State Enhancements */
+.empty-state {
+    padding: 2rem 0;
+}
+.empty-state i {
+    opacity: 0.6;
+}
+
+/* Forms polish */
+.form-control {
+    border-radius: 6px;
+}
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.15);
+}

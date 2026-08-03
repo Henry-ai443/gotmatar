@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>College Management | Sign In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+    <!-- Custom styles (rounded cards, shadows, etc.) -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+</head>
+<body class="hold-transition">
+    <div class="d-flex align-items-center justify-content-center min-vh-100 login-bg">
+        <div class="card login-card shadow-sm rounded" style="width: 100%; max-width: 420px;">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <a href="{% url 'student_home' %}" class="h1 font-weight-bold text-primary">College Management</a>
+                    <p class="lead text-muted">Sign in to your account</p>
+                </div>
+                {% if messages %}
+                <div class="mb-3">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <form action="doLogin/" method="post">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input required type="email" name="email" class="form-control" placeholder="Email">
+                        <div class="input-group-append">
+                            <div class="input-group-text"><span class="fas fa-envelope"></span></div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input required type="password" name="password" id="password" class="form-control" placeholder="Password">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group text-right mb-3">
+                        <small><a href="{% url 'password_reset' %}">Forgot Password?</a></small>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-block rounded">Log In</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- jQuery -->
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+    <!-- Bootstrap 4 -->
+    <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- AdminLTE App -->
+    <script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+    <!-- Show/Hide password toggle -->
+    <script>
+        const pwd = document.getElementById('password');
+        const toggle = document.createElement('span');
+        toggle.className = 'fas fa-eye ml-2 cursor-pointer';
+        toggle.style.cursor = 'pointer';
+        toggle.title = 'Show/Hide password';
+        toggle.onclick = () => {
+            const type = pwd.type === 'password' ? 'text' : 'password';
+            pwd.type = type;
+            toggle.classList.toggle('fa-eye');
+            toggle.classList.toggle('fa-eye-slash');
+        };
+        // Insert toggle after password input
+        const pwdGroup = pwd.parentElement.parentElement; // .input-group
+        pwdGroup.appendChild(toggle);
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends 'main_app/base.html' %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner"><h3>${{ total_collected }}</h3><p>Total Collected</p></div>
+                    <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner"><h3>${{ outstanding_fees }}</h3><p>Outstanding Fees</p></div>
+                    <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner"><h3>${{ total_payroll }}</h3><p>Total Payroll Paid</p></div>
+                    <div class="icon"><i class="fas fa-user-tie"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Recent Payments</h3></div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-dark"><tr><th>Date</th><th>Method</th><th>Amount</th><th>Ref</th></tr></thead>
+                                <tbody>
+                                    {% for p in payments %}
+                                    <tr><td>{{ p.payment_date }}</td><td>{{ p.method }}</td><td>${{ p.amount_paid }}</td><td>{{ p.reference_number|default:"-" }}</td></tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5">
+                                            <div class="empty-state">
+                                                <i class="fas fa-receipt fa-3x mb-3"></i>
+                                                <h5>No payments recorded yet</h5>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

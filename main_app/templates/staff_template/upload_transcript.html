@@ -1,0 +1,32 @@
+{% extends 'main_app/base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Upload Transcript</h2>
+
+    {% include "main_app/form_template.html" with form=form button_text="📤 Upload Transcript" %}
+</div>
+
+<div class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Uploaded Transcripts</h2>
+
+    {% if transcripts %}
+    <ul class="divide-y divide-gray-200">
+        {% for transcript in transcripts %}
+        <li class="flex justify-between items-center py-3">
+            <span class="text-gray-700 font-medium">{{ transcript.student.name }}</span>
+            <div class="space-x-4">
+                <a href="{{ transcript.file.url }}" target="_blank" 
+                   class="text-blue-600 hover:underline">📄 View</a>
+                <a href="{% url 'delete_transcript' transcript.id %}" 
+                   onclick="return confirm('Are you sure you want to delete this transcript?')"
+                   class="text-red-600 hover:underline">🗑 Delete</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-gray-500">No transcripts uploaded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
