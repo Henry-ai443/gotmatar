@@ -86,38 +86,51 @@ def admin_home(request):
     return render(request, 'hod_template/home_content.html', context)
 
 
-def add_staff(request):
-    form = StaffForm(request.POST or None, request.FILES or None)
-    context = {'form': form, 'page_title': 'Add Staff'}
+def add_staff_accountant(request):
+    """Unified view for adding Staff or Accountant.
+    Renders the UnifiedStaffForm which includes a role dropdown.
+    """
+    form = UnifiedStaffForm(request.POST or None, request.FILES or None)
+    context = {'form': form, 'page_title': 'Add Staff / Accountant'}
     if request.method == 'POST':
         if form.is_valid():
+            # Extract common fields
             first_name = form.cleaned_data.get('first_name')
             last_name = form.cleaned_data.get('last_name')
             address = form.cleaned_data.get('address')
             email = form.cleaned_data.get('email')
             gender = form.cleaned_data.get('gender')
             password = form.cleaned_data.get('password')
+            role = int(form.cleaned_data.get('role'))
             course = form.cleaned_data.get('course')
             passport = request.FILES.get('profile_pic')
             fs = FileSystemStorage()
             filename = fs.save(passport.name, passport)
             passport_url = fs.url(filename)
             try:
+                # role 2 = Staff, 4 = Accountant
                 user = CustomUser.objects.create_user(
-                    email=email, password=password, user_type=2, first_name=first_name, last_name=last_name, profile_pic=passport_url)
+                    email=email,
+                    password=password,
+                    user_type=role,
+                    first_name=first_name,
+                    last_name=last_name,
+                    profile_pic=passport_url,
+                )
                 user.gender = gender
                 user.address = address
-                user.staff.course = course
                 user.save()
+                # Assign course only for Staff (role 2)
+                if role == 2 and course:
+                    user.staff.course = course
+                    user.save()
                 messages.success(request, "Successfully Added")
-                return redirect(reverse('add_staff'))
-
+                return redirect(reverse('add_staff_accountant'))
             except Exception as e:
-                messages.error(request, "Could Not Add " + str(e))
+                messages.error(request, "Could Not Add: " + str(e))
         else:
             messages.error(request, "Please fulfil all requirements")
-
-    return render(request, 'hod_template/add_staff_template.html', context)
+    return render(request, 'hod_template/add_staff_accountant_template.html', context)
 
 
 def add_student(request):

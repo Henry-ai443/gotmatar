@@ -15,10 +15,12 @@ def home(request):
 
 def login_page(request):
     if request.user.is_authenticated:
-        if request.user.user_type == '1':
+        if request.user.user_type == 1:
             return redirect(reverse("admin_home"))
-        elif request.user.user_type == '2':
+        elif request.user.user_type == 2:
             return redirect(reverse("staff_home"))
+        elif request.user.user_type == 4:
+            return redirect(reverse("accountant_home"))
         else:
             return redirect(reverse("student_home"))
     return render(request, 'main_app/login.html')
@@ -51,10 +53,12 @@ def doLogin(request, **kwargs):
         user = EmailBackend.authenticate(request, username=request.POST.get('email'), password=request.POST.get('password'))
         if user != None:
             login(request, user)
-            if user.user_type == '1':
+            if user.user_type == 1:
                 return redirect(reverse("admin_home"))
-            elif user.user_type == '2':
+            elif user.user_type == 2:
                 return redirect(reverse("staff_home"))
+            elif user.user_type == 4:
+                return redirect(reverse("accountant_home"))
             else:
                 return redirect(reverse("student_home"))
         else:

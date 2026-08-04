@@ -1,5 +1,5 @@
 from django.urls import path
-from . import admin_views, staff_views, student_views
+from . import admin_views, staff_views, student_views, accountant_views
 
 urlpatterns = [
     # Admin
@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/reports/', admin_views.accounting_reports, name='accounting_reports'),
 
     # Staff
+    path('accountant/home/', accountant_views.accountant_home, name='accountant_home'),
     path('staff/salary-structure/', staff_views.view_salary_structure, name='staff_view_salary_structure'),
     path('staff/payslips/', staff_views.view_payslips, name='staff_view_payslips'),
 

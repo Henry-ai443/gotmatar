@@ -1,0 +1,125 @@
+{% extends 'main_app/base.html' %}
+{% block page_title %}{{ page_title }}{% endblock page_title %}
+
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>${{ total_collected }}</h3>
+                        <p>Total Collected</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>${{ total_outstanding }}</h3>
+                        <p>Total Outstanding</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ status_counts.paid|default:0 }}</h3>
+                        <p>Paid Invoices</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ status_counts.unpaid|default:0 }}</h3>
+                        <p>Unpaid Invoices</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-bolt mr-1"></i> Quick Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <a href="{% url 'view_invoices' %}" class="btn btn-primary mr-2 mb-2">
+                            <i class="fas fa-file-invoice mr-1"></i> View Invoices
+                        </a>
+                        <a href="{% url 'manage_fee_category' %}" class="btn btn-info mr-2 mb-2">
+                            <i class="fas fa-list mr-1"></i> Fee Categories
+                        </a>
+                        <a href="{% url 'manage_fee_structure' %}" class="btn btn-secondary mr-2 mb-2">
+                            <i class="fas fa-sitemap mr-1"></i> Fee Structures
+                        </a>
+                        <a href="{% url 'accounting_reports' %}" class="btn btn-dark mr-2 mb-2">
+                            <i class="fas fa-chart-line mr-1"></i> Accounting Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Payments Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-history mr-1"></i> Recent Payments</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Payment Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in recent_payments %}
+                                    <tr>
+                                        <td>{{ p.student_name }}</td>
+                                        <td>${{ p.amount }}</td>
+                                        <td>{{ p.date }}</td>
+                                        <td><span class="badge badge-info">{{ p.method }}</span></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">
+                                            <div class="empty-state">
+                                                <i class="fas fa-receipt fa-2x mb-2 text-muted"></i>
+                                                <p class="text-muted">No recent payments found</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

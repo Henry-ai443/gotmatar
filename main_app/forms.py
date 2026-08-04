@@ -83,6 +83,28 @@ class StaffForm(CustomUserForm):
         fields = CustomUserForm.Meta.fields + \
             ['course' ]
 
+# ---------------------------------------------------------------------------
+# Unified form for adding Staff or Accountant
+# ---------------------------------------------------------------------------
+class UnifiedStaffForm(CustomUserForm):
+    ROLE_CHOICES = (
+        (2, 'Staff'),
+        (4, 'Accountant'),
+    )
+    role = forms.ChoiceField(choices=ROLE_CHOICES, required=True, label='Role')
+
+    def __init__(self, *args, **kwargs):
+        super(UnifiedStaffForm, self).__init__(*args, **kwargs)
+        # Course is only relevant for Staff; hide it via JS in template
+        self.fields['course'].required = False
+        self.fields['course'].widget.attrs.update({'class': 'form-control'})
+
+    class Meta(CustomUserForm.Meta):
+        model = Staff
+        # Include role (handled separately) and optionally course
+        fields = CustomUserForm.Meta.fields + ['course']
+
+
 
 class CourseForm(FormSettings):
     def __init__(self, *args, **kwargs):
