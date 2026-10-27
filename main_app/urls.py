@@ -30,7 +30,6 @@ urlpatterns = [
     path("doLogin/", views.doLogin, name='user_login'),
     path("logout_user/", views.logout_user, name='user_logout'),
     path("admin/home/", hod_views.admin_home, name='admin_home'),
-    path("staff/add-unified/", hod_views.add_staff_accountant, name='add_staff_accountant'),
     path("course/add", hod_views.add_course, name='add_course'),
     path("send_student_notification/", hod_views.send_student_notification,
          name='send_student_notification'),
@@ -134,7 +133,10 @@ urlpatterns = [
          name="student_view_notification"),
     path('student/view/result/', student_views.student_view_result,
          name='student_view_result'),
+    path('student/invoices/', student_views.student_view_invoices, name='student_view_invoices'),
     path('student/transcripts/', student_views.student_transcripts, name='student_transcripts'),
+     path('webhooks/invoicing/', views.invoicing_webhook, name='invoicing_webhook'),
+     path('accounting/sso/', views.invoicing_sso_redirect, name='invoicing_sso_redirect'),
 
 
 ]

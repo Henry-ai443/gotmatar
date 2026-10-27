@@ -5,9 +5,16 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.core import signing
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.shortcuts import redirect
 
 from .EmailBackend import EmailBackend
 from .models import Attendance, Session, Subject
+from django.conf import settings
+from django.http import HttpResponse
+from .models import NotificationStudent, Student
 
 # Create your views here.
 def home(request):
@@ -19,8 +26,6 @@ def login_page(request):
             return redirect(reverse("admin_home"))
         elif request.user.user_type == 2:
             return redirect(reverse("staff_home"))
-        elif request.user.user_type == 4:
-            return redirect(reverse("accountant_home"))
         else:
             return redirect(reverse("student_home"))
     return render(request, 'main_app/login.html')
@@ -57,8 +62,6 @@ def doLogin(request, **kwargs):
                 return redirect(reverse("admin_home"))
             elif user.user_type == 2:
                 return redirect(reverse("staff_home"))
-            elif user.user_type == 4:
-                return redirect(reverse("accountant_home"))
             else:
                 return redirect(reverse("student_home"))
         else:
@@ -129,3 +132,46 @@ messaging.setBackgroundMessageHandler(function (payload) {
 });
     """
     return HttpResponse(data, content_type='application/javascript')
+
+
+@csrf_exempt
+def invoicing_webhook(request):
+    # Validate API key header
+    api_key = request.META.get('HTTP_X_API_KEY') or request.headers.get('X-API-KEY')
+    if not api_key or api_key != getattr(settings, 'INVOICING_API_KEY', None):
+        return HttpResponse(status=403)
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except Exception:
+        return HttpResponse(status=400)
+    reg = payload.get('registration_number') or payload.get('registrationNo')
+    message = payload.get('message') or json.dumps(payload)
+    if not reg:
+        return HttpResponse(status=400)
+    try:
+        student = Student.objects.filter(registration_number=reg).first()
+        if student:
+            NotificationStudent.objects.create(student=student, message=message)
+        return HttpResponse(status=200)
+    except Exception:
+        return HttpResponse(status=500)
+
+
+
+@login_required
+def invoicing_sso_redirect(request):
+    # Authorize HODs and Staff members explicitly granted accounting access.
+    is_authorized = (
+        request.user.user_type == 1 or
+        (request.user.user_type == 2 and getattr(getattr(request.user, 'staff', None), 'has_accounting_access', False))
+    )
+    if not is_authorized:
+        # send users back to their appropriate dashboard
+        if request.user.user_type == 2:
+            return redirect('staff_home')
+        if request.user.user_type == 3:
+            return redirect('student_home')
+        return redirect('admin_home')
+
+    token = signing.dumps({'email': request.user.email}, key=getattr(settings, 'SSO_SHARED_SECRET', None), salt='invoicing-sso')
+    return redirect(f"{getattr(settings, 'INVOICING_SITE_URL', 'http://127.0.0.1:8001')}/sso-login/?token={token}")

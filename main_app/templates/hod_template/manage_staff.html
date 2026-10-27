@@ -23,6 +23,7 @@
                                         <th>Email</th>
                                         <th>Gender</th>
                                         <th>Course</th>
+                                        <th>Accounting</th>
                                         <th>Avatar</th>
                                         <th>Actions</th>
                                     </tr>
@@ -36,6 +37,13 @@
                                         <td>{{staff.gender}}</td>
                                         <td>{{staff.staff.course.name}}</td>
                                         <td>
+                                            {% if staff.staff.has_accounting_access %}
+                                                <span class="badge badge-success">Accounting</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">No Access</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             {% if staff.profile_pic == ""  %}
                                             No Image
                                             {% else %}
@@ -43,6 +51,8 @@
                                                 src="{{staff.profile_pic}}" alt="">
                                             {% endif %}
                                         </td>
+                                        
+                                        
                                         <td>
                                             <a href="{% url 'edit_staff' staff.staff.id %}" class="btn btn-info">Edit</a> - 
                                             <a href="{% url 'delete_staff' staff.staff.id %}" class="btn btn-danger" onclick="return confirm('Are you sure about this ?')">Delete</a>

@@ -12,6 +12,7 @@ from django.views.generic import UpdateView
 
 from .forms import *
 from .models import *
+from .integrations.invoicing_client import sync_accounting_user, sync_student
 
 
 def admin_home(request):
@@ -86,53 +87,6 @@ def admin_home(request):
     return render(request, 'hod_template/home_content.html', context)
 
 
-def add_staff_accountant(request):
-    """Unified view for adding Staff or Accountant.
-    Renders the UnifiedStaffForm which includes a role dropdown.
-    """
-    form = UnifiedStaffForm(request.POST or None, request.FILES or None)
-    context = {'form': form, 'page_title': 'Add Staff / Accountant'}
-    if request.method == 'POST':
-        if form.is_valid():
-            # Extract common fields
-            first_name = form.cleaned_data.get('first_name')
-            last_name = form.cleaned_data.get('last_name')
-            address = form.cleaned_data.get('address')
-            email = form.cleaned_data.get('email')
-            gender = form.cleaned_data.get('gender')
-            password = form.cleaned_data.get('password')
-            role = int(form.cleaned_data.get('role'))
-            course = form.cleaned_data.get('course')
-            passport = request.FILES.get('profile_pic')
-            fs = FileSystemStorage()
-            filename = fs.save(passport.name, passport)
-            passport_url = fs.url(filename)
-            try:
-                # role 2 = Staff, 4 = Accountant
-                user = CustomUser.objects.create_user(
-                    email=email,
-                    password=password,
-                    user_type=role,
-                    first_name=first_name,
-                    last_name=last_name,
-                    profile_pic=passport_url,
-                )
-                user.gender = gender
-                user.address = address
-                user.save()
-                # Assign course only for Staff (role 2)
-                if role == 2 and course:
-                    user.staff.course = course
-                    user.save()
-                messages.success(request, "Successfully Added")
-                return redirect(reverse('add_staff_accountant'))
-            except Exception as e:
-                messages.error(request, "Could Not Add: " + str(e))
-        else:
-            messages.error(request, "Please fulfil all requirements")
-    return render(request, 'hod_template/add_staff_accountant_template.html', context)
-
-
 def add_student(request):
     student_form = StudentForm(request.POST or None, request.FILES or None)
     context = {'form': student_form, 'page_title': 'Add Student'}
@@ -146,6 +100,7 @@ def add_student(request):
             password = student_form.cleaned_data.get('password')
             course = student_form.cleaned_data.get('course')
             session = student_form.cleaned_data.get('session')
+            registration_number = student_form.cleaned_data.get('registration_number')
             passport = request.FILES['profile_pic']
             fs = FileSystemStorage()
             filename = fs.save(passport.name, passport)
@@ -157,13 +112,20 @@ def add_student(request):
                 user.address = address
                 user.student.session = session
                 user.student.course = course
+                user.student.date_of_birth = student_form.cleaned_data.get('date_of_birth')
+                user.student.registration_number = registration_number
                 user.save()
-                from accounting.services import generate_invoices_for_student
-                generate_invoices_for_student(user.student)
+                # attempt to sync student with external invoicing system (non-blocking)
+                try:
+                    res = sync_student(user.student)
+                    if not res:
+                        messages.warning(request, "Student saved but failed to sync to invoicing system.")
+                except Exception:
+                    messages.warning(request, "Student saved but invoicing sync encountered an error.")
                 messages.success(request, "Successfully Added")
                 return redirect(reverse('add_student'))
             except Exception as e:
-                messages.error(request, "Could Not Add: " + str(e))
+                messages.error(request, "Could Not Add: " + repr(e))
         else:
             messages.error(request, "Could Not Add: ")
     return render(request, 'hod_template/add_student_template.html', context)
@@ -257,7 +219,8 @@ def manage_subject(request):
 
 def edit_staff(request, staff_id):
     staff = get_object_or_404(Staff, id=staff_id)
-    form = StaffForm(request.POST or None, instance=staff)
+    # use StaffEditForm so HOD can toggle accounting access
+    form = StaffEditForm(request.POST or None, instance=staff)
     context = {
         'form': form,
         'staff_id': staff_id,
@@ -273,6 +236,7 @@ def edit_staff(request, staff_id):
             gender = form.cleaned_data.get('gender')
             password = form.cleaned_data.get('password') or None
             course = form.cleaned_data.get('course')
+            has_accounting = form.cleaned_data.get('has_accounting_access')
             passport = request.FILES.get('profile_pic') or None
             try:
                 user = CustomUser.objects.get(id=staff.admin.id)
@@ -290,17 +254,25 @@ def edit_staff(request, staff_id):
                 user.gender = gender
                 user.address = address
                 staff.course = course
+                staff.has_accounting_access = bool(has_accounting)
                 user.save()
                 staff.save()
+                if staff.has_accounting_access:
+                    try:
+                        res = sync_accounting_user(user)
+                        if not res:
+                            messages.warning(request, "Staff updated but failed to sync accounting user to invoicing system.")
+                    except Exception:
+                        messages.warning(request, "Staff updated but invoicing user sync encountered an error.")
                 messages.success(request, "Successfully Updated")
                 return redirect(reverse('edit_staff', args=[staff_id]))
             except Exception as e:
                 messages.error(request, "Could Not Update " + str(e))
+                return render(request, "hod_template/edit_staff_template.html", context)
         else:
             messages.error(request, "Please fil form properly")
+            return render(request, "hod_template/edit_staff_template.html", context)
     else:
-        user = CustomUser.objects.get(id=staff_id)
-        staff = Staff.objects.get(id=user.id)
         return render(request, "hod_template/edit_staff_template.html", context)
 
 
@@ -323,6 +295,7 @@ def edit_student(request, student_id):
             password = form.cleaned_data.get('password') or None
             course = form.cleaned_data.get('course')
             session = form.cleaned_data.get('session')
+            registration_number = form.cleaned_data.get('registration_number')
             passport = request.FILES.get('profile_pic') or None
             try:
                 user = CustomUser.objects.get(id=student.admin.id)
@@ -338,13 +311,20 @@ def edit_student(request, student_id):
                 user.first_name = first_name
                 user.last_name = last_name
                 student.session = session
+                student.date_of_birth = form.cleaned_data.get('date_of_birth')
+                student.registration_number = registration_number
                 user.gender = gender
                 user.address = address
                 student.course = course
                 user.save()
                 student.save()
-                from accounting.services import generate_invoices_for_student
-                generate_invoices_for_student(student)
+                # attempt to sync updated student (non-blocking)
+                try:
+                    res = sync_student(student)
+                    if not res:
+                        messages.warning(request, "Student updated but failed to sync to invoicing system.")
+                except Exception:
+                    messages.warning(request, "Student updated but invoicing sync encountered an error.")
                 messages.success(request, "Successfully Updated")
                 return redirect(reverse('edit_student', args=[student_id]))
             except Exception as e:

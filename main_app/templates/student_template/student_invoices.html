@@ -1,0 +1,105 @@
+{% extends 'main_app/base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h3 class="m-0">{{ page_title }}</h3>
+        </div>
+    </div>
+
+    {% if invoices == None %}
+        <div class="alert alert-warning">Invoices could not be fetched at this time.</div>
+    {% elif invoices|length == 0 %}
+        <div class="alert alert-info">No invoices found.</div>
+    {% else %}
+        {% comment %} Stack invoices newest first if API returns chronological order; reverse if needed {% endcomment %}
+        <div class="invoice-list">
+            {% for inv in invoices|dictsortreversed:"id" %}
+                <div class="card mb-4 shadow-sm rounded">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="mb-0">{{ inv.session }} — {{ inv.term }}</h5>
+                                <div class="text-muted">{{ inv.class_for }}</div>
+                            </div>
+                            <div class="text-right">
+                                {% if inv.status == 'paid' %}
+                                    <span class="badge badge-success">{{ inv.status|capfirst }}</span>
+                                {% elif inv.status == 'active' or inv.status == 'partial' %}
+                                    <span class="badge badge-warning">{{ inv.status|capfirst }}</span>
+                                {% elif inv.status == 'overdue' %}
+                                    <span class="badge badge-danger">{{ inv.status|capfirst }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ inv.status|default:'Unknown'|capfirst }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <div class="card mb-3 border-0">
+                                    <div class="card-body p-0">
+                                        <h6 class="mb-2">Itemized Charges</h6>
+                                        {% if inv.items %}
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead class="thead-light"><tr><th>Description</th><th class="text-right">Amount</th></tr></thead>
+                                                    <tbody>
+                                                        {% for it in inv.items %}
+                                                            <tr>
+                                                                <td>{{ it.description }}</td>
+                                                                <td class="text-right">{{ it.amount }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-muted">No items</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card border-0">
+                                    <div class="card-body p-0">
+                                        <h6 class="mb-2">Payment History</h6>
+                                        {% if inv.receipts %}
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead class="thead-light"><tr><th>Date</th><th class="text-right">Amount</th><th>Comment</th></tr></thead>
+                                                    <tbody>
+                                                        {% for r in inv.receipts %}
+                                                            <tr>
+                                                                <td>{{ r.date_paid }}</td>
+                                                                <td class="text-right">{{ r.amount_paid }}</td>
+                                                                <td>{{ r.comment }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-muted">No payments yet</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5">
+                                <div class="invoice-summary p-3 rounded bg-light">
+                                    <h6 class="mb-3">Summary</h6>
+                                    <div class="d-flex justify-content-between"><div>Total Payable</div><div>{{ inv.total_amount_payable }}</div></div>
+                                    <div class="d-flex justify-content-between"><div>Total Paid</div><div>{{ inv.total_amount_paid }}</div></div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between"><div><strong>Balance Due</strong></div><div><strong class="text-danger">{{ inv.balance }}</strong></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

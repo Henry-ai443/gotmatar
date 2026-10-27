@@ -43,7 +43,6 @@ class CustomUser(AbstractUser):
         HOD = 1, "HOD"
         STAFF = 2, "Staff"
         STUDENT = 3, "Student"
-        ACCOUNTANT = 4, "Accountant"
     GENDER = [("M", "Male"), ("F", "Female")]
     
     
@@ -82,6 +81,8 @@ class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
     session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
+    registration_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.admin.last_name + ", " + self.admin.first_name
@@ -90,6 +91,7 @@ class Student(models.Model):
 class Staff(models.Model):
     course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    has_accounting_access = models.BooleanField(default=False)
 
     def __str__(self):
         return self.admin.last_name + " " + self.admin.first_name

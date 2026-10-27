@@ -21,6 +21,8 @@
                                         <th>#</th>
                                         <th>Full Name</th>
                                         <th>Email</th>
+                                        <th>Registration Number</th>
+                                        <th>Date of Birth</th>
                                         <th>Gender</th>
                                         <th>Course</th>
                                         <th>Avatar</th>
@@ -33,6 +35,8 @@
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{student.last_name}}, {{student.first_name}}</td>
                                         <td>{{student.email}}</td>
+                                        <td>{% if student.student.registration_number %}{{ student.student.registration_number }}{% else %}<span class="text-warning font-weight-bold">Missing</span>{% endif %}</td>
+                                        <td>{% if student.student.date_of_birth %}{{ student.student.date_of_birth|date:"Y-m-d" }}{% else %}<span class="text-warning font-weight-bold">Missing</span>{% endif %}</td>
                                         <td>{{student.gender}}</td>
                                         <td>{{student.student.course.name}}</td>
                                         <td>

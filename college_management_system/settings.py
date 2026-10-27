@@ -53,7 +53,6 @@ INSTALLED_APPS = [
 
     # My Apps
      'main_app.apps.MainAppConfig',
-     'accounting.apps.AccountingConfig',
 ]
 
 MIDDLEWARE = [
@@ -150,6 +149,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 AUTH_USER_MODEL = 'main_app.CustomUser'
 AUTHENTICATION_BACKENDS = ['main_app.EmailBackend.EmailBackend']
 TIME_ZONE = 'Africa/Nairobi'
+
+# Invoicing integration settings
+INVOICING_BASE_URL = os.environ.get('INVOICING_BASE_URL', 'http://127.0.0.1:8001')
+INVOICING_API_KEY = os.environ.get('INVOICING_API_KEY')
+SSO_SHARED_SECRET = os.environ.get('SSO_SHARED_SECRET')
+INVOICING_SITE_URL = os.environ.get('INVOICING_SITE_URL', 'http://127.0.0.1:8001')
 
 # EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 # EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_mails")

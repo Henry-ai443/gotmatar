@@ -209,6 +209,7 @@ def student_view_result(request):
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from main_app.models import Transcript, Student
+from .integrations.invoicing_client import get_invoices_for_student
 
 @login_required
 def student_transcripts(request):
@@ -219,5 +220,19 @@ def student_transcripts(request):
         transcripts = None  # If no student found, return empty
 
     return render(request, 'student_template/view_transcripts.html', {'transcripts': transcripts})
+
+
+def student_view_invoices(request):
+    student = get_object_or_404(Student, admin=request.user)
+    invoices = None
+    try:
+        invoices = get_invoices_for_student(student.registration_number)
+    except Exception:
+        invoices = None
+    context = {
+        'invoices': invoices,
+        'page_title': 'Invoices'
+    }
+    return render(request, 'student_template/student_invoices.html', context)
 
 
