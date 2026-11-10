@@ -1,5 +1,5 @@
 import json
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.conf import settings
 
 
@@ -72,10 +72,20 @@ class SSOTests(TestCase):
 	def test_hod_gets_sso_token_redirect(self):
 		c = Client()
 		c.force_login(self.hod)
-		resp = c.get('/accounting/sso/', follow=False)
+		with self.settings(ACCOUNTING_SYSTEM_URL='https://accounting.example.test/'):
+			resp = c.get('/accounting/sso/', follow=False)
 		self.assertEqual(resp.status_code, 302)
 		loc = resp.get('Location')
+		self.assertTrue(loc.startswith('https://accounting.example.test/sso-login/?token='))
 		self.assertIn('/sso-login/?token=', loc)
+
+	@override_settings(ACCOUNTING_SYSTEM_URL='')
+	def test_hod_gets_service_unavailable_when_accounting_url_is_missing(self):
+		c = Client()
+		c.force_login(self.hod)
+		resp = c.get('/accounting/sso/', follow=False)
+		self.assertEqual(resp.status_code, 503)
+		self.assertNotIn('localhost', resp.get('Location', ''))
 
 	def test_staff_does_not_get_token(self):
 		c = Client()

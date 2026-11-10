@@ -155,6 +155,9 @@ INVOICING_BASE_URL = os.environ.get('INVOICING_BASE_URL', 'http://127.0.0.1:8001
 INVOICING_API_KEY = os.environ.get('INVOICING_API_KEY')
 SSO_SHARED_SECRET = os.environ.get('SSO_SHARED_SECRET')
 INVOICING_SITE_URL = os.environ.get('INVOICING_SITE_URL', 'http://127.0.0.1:8001')
+ACCOUNTING_SYSTEM_URL = os.environ.get(
+    'ACCOUNTING_SYSTEM_URL', 'https://gotmatar-invoice.onrender.com'
+).strip()
 
 # EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 # EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_mails")

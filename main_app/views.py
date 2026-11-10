@@ -1,5 +1,6 @@
 import json
 import requests
+from urllib.parse import urlencode, urljoin
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
@@ -173,5 +174,10 @@ def invoicing_sso_redirect(request):
             return redirect('student_home')
         return redirect('admin_home')
 
+    accounting_url = getattr(settings, 'ACCOUNTING_SYSTEM_URL', '').strip()
+    if not accounting_url:
+        return HttpResponse('Accounting System URL is not configured.', status=503)
+
     token = signing.dumps({'email': request.user.email}, key=getattr(settings, 'SSO_SHARED_SECRET', None), salt='invoicing-sso')
-    return redirect(f"{getattr(settings, 'INVOICING_SITE_URL', 'http://127.0.0.1:8001')}/sso-login/?token={token}")
+    sso_url = urljoin(accounting_url.rstrip('/') + '/', 'sso-login/')
+    return redirect(f'{sso_url}?{urlencode({"token": token})}')
